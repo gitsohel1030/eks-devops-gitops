@@ -1,0 +1,10 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-app-ingress
+  annotations:
+    alb.ingress.kubernetes.io/actions.forward-blue-green: >
+      {"type":"forward","forwardConfig":{"targetGroups":[
+        {"serviceName":"web-svc-blue","servicePort":"80","weight":100},
+        {"serviceName":"web-svc-green","servicePort":"80","weight":0}
+      ]}}

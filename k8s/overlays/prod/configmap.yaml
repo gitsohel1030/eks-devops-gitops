@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-app-configmap
+  # namespace: prod-app
+data:
+  APP_ENV: "prod"
+  LOG_LEVEL: "warn"
+  FEATURE_FLAGS: "enableSignup=true, enableCache=false"
