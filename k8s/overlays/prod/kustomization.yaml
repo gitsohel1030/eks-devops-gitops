@@ -7,6 +7,10 @@ resources:
   - ../../base
   - namespace.yaml
   - configmap.yaml
+  - hpa-blue.yaml
+  - hpa-green.yaml
+  - pdb-blue.yaml
+  - pdb-green.yaml
 
 
 labels:

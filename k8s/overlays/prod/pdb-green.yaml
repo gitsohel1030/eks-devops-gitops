@@ -1,0 +1,11 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web-app-pdb-green
+  # namespace: prod-app
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: web-app
+      version: green

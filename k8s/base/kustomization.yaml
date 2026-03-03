@@ -7,10 +7,6 @@ resources:
   - service-blue.yaml
   - service-green.yaml
   - ingress.yaml
-  - hpa-blue.yaml
-  - hpa-green.yaml
-  - pdb-blue.yaml
-  - pdb-green.yaml
 
 # cluster wide labels
 # labels:     
