@@ -40,7 +40,7 @@ spec:
 
       containers:
         - name: web-app
-          image: 608827180555.dkr.ecr.ap-south-1.amazonaws.com/web-app:1839099
+          image: 608827180555.dkr.ecr.ap-south-1.amazonaws.com/web-app
           ports:
             - containerPort: 80
 

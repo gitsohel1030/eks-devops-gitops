@@ -20,12 +20,20 @@ labels:
 
 
 patches:
+  # blue image patch 
   - path: patch-blue-image.yaml    
     target:
       kind: Deployment
       name: web-app-blue
 
-  - path: traffic/traffic-green-100.yaml
+  # green image patch
+  - path: patch-green-image.yaml
+    target:
+      kind: Deployment
+      name: web-app-green
+
+  # Default traffic route to
+  - path: traffic/traffic-blue-100.yaml
     target:
       kind: Ingress
       name: web-app-ingress
