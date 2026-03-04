@@ -25,7 +25,7 @@ patches:
       kind: Deployment
       name: web-app-blue
 
-  - path: traffic/traffic-blue-100.yaml
+  - path: traffic/traffic-green-100.yaml
     target:
       kind: Ingress
       name: web-app-ingress
