@@ -7,7 +7,7 @@ spec:
   project: default
 
   source:
-    repoURL: "https://github.com/gitsohel1030/eks-devops-gitops.git"
+    repoURL: "git@github.com:gitsohel1030/eks-devops-gitops.git"
     targetRevision: main
     path: k8s/overlays/prod
 
