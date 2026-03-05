@@ -7,4 +7,4 @@ spec:
     spec:
       containers:
         - name: web-app
-          image: 608827180555.dkr.ecr.ap-south-1.amazonaws.com/web-app:0696b3f
+          image: 608827180555.dkr.ecr.ap-south-1.amazonaws.com/web-app:78a7bac
