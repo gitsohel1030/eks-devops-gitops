@@ -1,0 +1,61 @@
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: argocd
+    meta.helm.sh/release-namespace: argocd
+  creationTimestamp: "2026-03-10T10:41:39Z"
+  finalizers:
+  - service.k8s.aws/resources
+  labels:
+    app.kubernetes.io/component: server
+    app.kubernetes.io/instance: argocd
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: argocd-server
+    app.kubernetes.io/part-of: argocd
+    app.kubernetes.io/version: v3.3.3
+    helm.sh/chart: argo-cd-9.4.10
+  name: argocd-server
+  namespace: argocd
+  resourceVersion: "9287"
+  uid: 6053d7d6-e756-426a-a8ac-756ae5f84755
+spec:
+  allocateLoadBalancerNodePorts: true
+  clusterIP: 172.20.185.164
+  clusterIPs:
+  - 172.20.185.164
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  loadBalancerClass: service.k8s.aws/nlb
+  ports:
+  - name: http
+    nodePort: 32278
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  - name: https
+    nodePort: 32612
+    port: 443
+    protocol: TCP
+    targetPort: 8083
+  selector:
+    app.kubernetes.io/instance: argocd
+    app.kubernetes.io/name: argocd-server
+  sessionAffinity: None
+  type: LoadBalancer
+status:
+  loadBalancer:
+    ingress:
+    - hostname: k8s-argocd-argocdse-cd199871bd-a09f3575a5bdac4f.elb.ap-south-1.amazonaws.com
+      ports:
+      - port: 80
+        protocol: TCP
+      - port: 443
+        protocol: TCP
