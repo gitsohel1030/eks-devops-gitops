@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: "https://github.com/gitsohel1030/eks-devops-gitops.git"
     targetRevision: main
-    path: argocd/
+    path: argocd
 
   destination:
     server: "https://kubernetes.default.svc"
