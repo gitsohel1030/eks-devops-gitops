@@ -1,0 +1,90 @@
+fullnameOverride: prometheus-stack
+
+#------------PROMETHEUS---------------------------------------------------------------------------------
+
+prometheus:
+  prometheusSpec:
+    retention: 7d
+
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp3
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+    resources:
+      requests:
+        cpu: 200m
+        memory: 400Mi
+      limit: 
+        cpu: 500m
+        memory: 600Mi
+
+#-------------GRAFANA-----------------------------------------------------------------------------------------
+
+grafana:
+  enabled: true
+  adminPassword: "devops123"
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 150Mi
+    limit: 
+      cpu: 200m
+      memory: 200Mi
+
+  ingress: 
+    enabled: true
+    ingressClassName: alb
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+
+  persistence:
+    enabled: true
+    storageClassName: gp3
+    size: 5Gi
+
+#-------------------AlertManager-------------------------------------------------
+
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+
+    storage: 
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp3
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 2Gi
+
+#----------------------------NODE EXPORTER----------------------------------------------------
+
+nodeExporter:
+  enabled: true
+
+#-------------------------------kube-state-metrics---------------------------------------------------
+
+kubeStateMetrics:
+  enabled: true
+
+#------------------------- Disable EKS Managed Control Plane Components--------------------------
+
+kubeEtcd:
+  enabled: false
+kubeControllerManager:
+  eabled: false
+kubeScheduler:
+  enabled: false
