@@ -33,7 +33,7 @@ patches:
       name: web-app-green
 
   # Default traffic route to
-  - path: traffic/traffic-blue-100.yaml
+  - path: traffic/traffic-green-100.yaml
     target:
       kind: Ingress
       name: web-app-ingress
