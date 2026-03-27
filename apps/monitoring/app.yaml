@@ -23,6 +23,13 @@ spec:
     server: https://kubernetes.default.svc
     namespace: monitoring
 
+  # telling argocd not to block on PVC health
+  ignoreDifferences:
+    - group: ""
+      kind: PersistentVolumeClaim
+      jsonPointers:
+        - /status/phase
+
   syncPolicy:
     automated:
       prune: true
