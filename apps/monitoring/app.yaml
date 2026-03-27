@@ -13,11 +13,11 @@ spec:
       targetRevision: 65.1.1
       helm:
         valueFiles:
-          - $values/k8s/monitoring/values.yaml
+          - /k8s/monitoring/values.yaml
 
     - repoURL: https://github.com/gitsohel1030/eks-devops-gitops.git
       targetRevision: main
-      ref: values   # gitops repo aliased as $values
+      ref: /k8s/monitoring/values.yaml   # gitops repo aliased as $values
 
   destination:
     server: https://kubernetes.default.svc
