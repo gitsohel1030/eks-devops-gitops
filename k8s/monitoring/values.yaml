@@ -19,7 +19,7 @@ prometheus:
       requests:
         cpu: 200m
         memory: 400Mi
-      limit: 
+      limits: 
         cpu: 500m
         memory: 600Mi
 
@@ -33,7 +33,7 @@ grafana:
     requests:
       cpu: 100m
       memory: 150Mi
-    limit: 
+    limits: 
       cpu: 200m
       memory: 200Mi
 
