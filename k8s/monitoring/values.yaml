@@ -45,7 +45,7 @@ grafana:
       alb.ingress.kubernetes.io/target-type: ip
 
   persistence:
-    enabled: true
+    enabled: false #true - temp disabled
     storageClassName: gp3
     size: 5Gi
 
