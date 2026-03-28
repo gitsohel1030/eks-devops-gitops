@@ -1,0 +1,132 @@
+# Loki deployment mode — Simple Scalable
+# Splits read and write paths for production grade setup
+# Write path: receives and stores logs
+# Read path: serves queries from Grafana
+deploymentMode: SimpleScalable
+ 
+loki:
+  # Auth disabled — single tenant setup
+  # In multi-team production you'd enable this
+  auth_enabled: false
+ 
+  # Tell Loki to use S3 for storage
+  # This is the production pattern — no EBS volumes needed
+  commonConfig:
+    replication_factor: 1   # single replica fine for portfolio cluster
+ 
+  storage:
+    type: s3
+    bucketNames:
+      chunks: my-eks-cluster-1030-loki-logs   # where log chunks are stored
+      ruler: my-eks-cluster-1030-loki-logs    # where alerting rules are stored
+      admin: my-eks-cluster-1030-loki-logs    # where admin data is stored
+    s3:
+      region: ap-south-1
+      # No credentials needed — IRSA handles authentication
+      # Loki pod's ServiceAccount maps to the IAM role we created
+ 
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+ 
+# ── Write Path ────────────────────────────────────────────────
+# Receives logs from Promtail and writes to S3
+write:
+  replicas: 2   # two replicas for reliability
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+ 
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: gp3   # uses our EBS CSI driver
+ 
+# ── Read Path ─────────────────────────────────────────────────
+# Serves log queries from Grafana
+read:
+  replicas: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+ 
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: gp3
+ 
+# ── Backend ───────────────────────────────────────────────────
+# Handles compaction and retention
+backend:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+ 
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: gp3
+ 
+# ── Service Account ───────────────────────────────────────────
+# This is where IRSA magic happens
+# Kubernetes annotates this SA with the IAM role ARN
+# AWS then allows this pod to assume that role automatically
+serviceAccount:
+  create: true
+  name: loki
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::608827180555:role/my-eks-cluster-1030-loki"
+ 
+# ── Grafana Datasource ────────────────────────────────────────
+# Automatically adds Loki as a datasource in your existing Grafana
+grafana-agent-operator:
+  enabled: false
+ 
+# Disable self-monitoring for now — saves resources
+monitoring:
+  selfMonitoring:
+    enabled: false
+    grafanaAgent:
+      installOperator: false
+  lokiCanary:
+    enabled: false
+ 
+# Disable built-in Grafana — we already have one running
+grafana:
+  enabled: false
+ 
+# Disable built-in Prometheus — we already have one running  
+prometheus:
+  enabled: false
+ 
+# Gateway — single entry point for Promtail to send logs
+# and Grafana to query logs
+gateway:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+ 

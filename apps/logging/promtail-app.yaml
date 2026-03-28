@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: promtail
+  namespace: argocd
+spec:
+  project: default
+ 
+  sources:
+    - repoURL: https://grafana.github.io/helm-charts
+      chart: promtail
+      targetRevision: 6.16.6    # pinned version
+      helm:
+        valueFiles:
+          - $values/k8s/logging/promtail-values.yaml
+ 
+    - repoURL: https://github.com/gitsohel1030/eks-devops-gitops.git
+      targetRevision: main
+      ref: values
+ 
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: logging
+ 
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+ 

@@ -1,0 +1,53 @@
+# Promtail — collects logs from all pods on every node
+# Runs as DaemonSet — one pod per node automatically
+ 
+config:
+  # Where to send logs — points to Loki gateway
+  clients:
+    - url: http://loki-gateway.logging.svc.cluster.local/loki/api/v1/push
+ 
+  # What to collect and how to label it
+  snippets:
+    pipelineStages:
+      - cri: {}   # parse container runtime log format
+ 
+    # Automatically discover all pods on this node
+    scrapeConfigs:
+      - job_name: kubernetes-pods
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          # Use pod namespace as a label
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          # Use pod name as a label
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          # Use container name as a label
+          - source_labels: [__meta_kubernetes_pod_container_name]
+            target_label: container
+          # Use app label from pod as a label
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: app
+          # Use node name as a label
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            target_label: node
+ 
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+ 
+# Tolerations — allow Promtail to run on ALL nodes
+# including system nodes that might have taints
+tolerations:
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+ 

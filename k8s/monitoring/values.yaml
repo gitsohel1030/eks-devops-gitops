@@ -49,6 +49,13 @@ grafana:
     storageClassName: gp3
     size: 5Gi
 
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki-gateway.logging.svc.cluster.local
+      access: proxy
+      isDefault: false
+
 #-------------------AlertManager-------------------------------------------------
 
 alertmanager:
