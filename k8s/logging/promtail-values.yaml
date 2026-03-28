@@ -7,29 +7,24 @@ config:
     - url: http://loki-gateway.logging.svc.cluster.local/loki/api/v1/push
  
   # What to collect and how to label it
+  # parse container runtime log format
   snippets:
-    pipelineStages:
-      - cri: {}   # parse container runtime log format
- 
-    # Automatically discover all pods on this node
-    scrapeConfigs:
+    pipelineStages: |
+      - cri: {}   
+      
+    scrapeConfigs: |
       - job_name: kubernetes-pods
         kubernetes_sd_configs:
           - role: pod
         relabel_configs:
-          # Use pod namespace as a label
           - source_labels: [__meta_kubernetes_namespace]
             target_label: namespace
-          # Use pod name as a label
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
-          # Use container name as a label
           - source_labels: [__meta_kubernetes_pod_container_name]
             target_label: container
-          # Use app label from pod as a label
           - source_labels: [__meta_kubernetes_pod_label_app]
             target_label: app
-          # Use node name as a label
           - source_labels: [__meta_kubernetes_pod_node_name]
             target_label: node
  
