@@ -1,32 +1,65 @@
-# Promtail — collects logs from all pods on every node
-# Runs as DaemonSet — one pod per node automatically
- 
 config:
-  # Where to send logs — points to Loki gateway
   clients:
     - url: http://loki-gateway.logging.svc.cluster.local/loki/api/v1/push
  
-  # What to collect and how to label it
-  # parse container runtime log format
   snippets:
     pipelineStages: |
-      - cri: {}   
-      
+      - cri: {}
+ 
     scrapeConfigs: |
       - job_name: kubernetes-pods
         kubernetes_sd_configs:
           - role: pod
+        pipeline_stages:
+          - cri: {}
         relabel_configs:
-          - source_labels: [__meta_kubernetes_namespace]
+          - source_labels:
+              - __meta_kubernetes_pod_node_name
+            target_label: __host__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - action: replace
+            replacement: $1
+            separator: /
+            source_labels:
+              - __meta_kubernetes_namespace
+              - __meta_kubernetes_pod_name
+            target_label: job
+          - action: replace
+            source_labels:
+              - __meta_kubernetes_namespace
             target_label: namespace
-          - source_labels: [__meta_kubernetes_pod_name]
+          - action: replace
+            source_labels:
+              - __meta_kubernetes_pod_name
             target_label: pod
-          - source_labels: [__meta_kubernetes_pod_container_name]
+          - action: replace
+            source_labels:
+              - __meta_kubernetes_pod_container_name
             target_label: container
-          - source_labels: [__meta_kubernetes_pod_label_app]
-            target_label: app
-          - source_labels: [__meta_kubernetes_pod_node_name]
-            target_label: node
+          - replacement: /var/log/pods/*$1/*.log
+            separator: /
+            source_labels:
+              - __meta_kubernetes_pod_uid
+              - __meta_kubernetes_pod_container_name
+            target_label: __path__
+ 
+# Mount host log directories into Promtail pod
+# Without these mounts Promtail can't see any log files
+volumeMounts:
+  - name: pods-logs
+    mountPath: /var/log/pods
+    readOnly: true
+  - name: run
+    mountPath: /run/promtail
+ 
+volumes:
+  - name: pods-logs
+    hostPath:
+      path: /var/log/pods   # actual node log directory
+  - name: run
+    hostPath:
+      path: /run/promtail
  
 resources:
   requests:
@@ -36,8 +69,6 @@ resources:
     cpu: 100m
     memory: 128Mi
  
-# Tolerations — allow Promtail to run on ALL nodes
-# including system nodes that might have taints
 tolerations:
   - key: node-role.kubernetes.io/master
     operator: Exists

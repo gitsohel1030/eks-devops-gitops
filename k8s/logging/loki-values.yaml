@@ -129,4 +129,10 @@ gateway:
     limits:
       cpu: 100m
       memory: 128Mi
+
+chunksCache:
+  enabled: false
+
+resultsCache:
+  enabled: false
  
