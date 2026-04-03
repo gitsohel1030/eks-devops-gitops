@@ -76,6 +76,11 @@ alertmanager:
           resources:
             requests:
               storage: 2Gi
+    
+    # Mount the k8s secret containing webhook URL
+    # this keeps the url of Git completely 
+    secrets:
+      - alertmanager-slack-webhook 
 
   config:
     global:
@@ -115,12 +120,7 @@ alertmanager:
           - severity="critical"
         target_matchers:
           - severity="warning"
-        equal: ['alertname', 'namespace']
-
-  # Mount the k8s secret containing webhook URL
-  # this keeps the url of Git completely 
-    secrets:
-      - alertmanager-slack-webhook           
+        equal: ['alertname', 'namespace']          
 
 #----------------------------NODE EXPORTER----------------------------------------------------
 
