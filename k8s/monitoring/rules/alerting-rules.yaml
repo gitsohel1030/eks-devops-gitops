@@ -1,6 +1,8 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: devops-platform-alerts
+  namespace: monitoring
   labels:
     # these labels are required for prometheus operator 
     # to discover and load this rule
