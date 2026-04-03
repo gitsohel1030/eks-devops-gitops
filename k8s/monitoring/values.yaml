@@ -101,18 +101,13 @@ alertmanager:
           repeat_interval: 6h
 
     receivers:
-      - name: slack-notifications
-        slack_configs:
-          - channel: '#devops-alerts'
-            send_resolved: true  # notify when alert resolved too
-            title: '{{ if eq .Status "firing" }} FIRING{{ else }} RESOLVED{{ end }} - {{ .CommonLabels.alertname }}'
-            text: |
-              {{ range .Alerts }}
-              *Severity:* {{ .Labels.severity }}
-              *Namespace:* {{ .Labels.namespace }}
-              *Description:* {{ .Annotations.description }}
-              *Started:* {{ .StartsAt.Format | "2016-01-01 15:04:05" }}
-              {{ end }}
+    - name: slack-notifications
+      slack_configs:
+        - channel: '#devops-alerts'
+          send_resolved: true
+          title: '{{ if eq .Status "firing" }} FIRING{{ else }} RESOLVED{{ end }} — {{ .CommonLabels.alertname }}'
+          text: '{{ range .Alerts }}*Severity:* {{ .Labels.severity }} | *Namespace:* {{ .Labels.namespace }} | *Description:* {{ .Annotations.description }}{{ end }}'
+ 
 
     inhibit_rules:
       # If critical alert is firing, suppress warning for same issue
