@@ -77,56 +77,56 @@ alertmanager:
             requests:
               storage: 2Gi
 
-#   config:
-#     global:
-#       resolve_timeout: 5m
-#       slack_api_url_file: /etc/alertmanager/secrets/alertmanager-slack-webhook/webhook-url
+  config:
+    global:
+      resolve_timeout: 5m
+      slack_api_url_file: /etc/alertmanager/secrets/alertmanager-slack-webhook/webhook-url
     
-#     route:
-#       group_by: ['alertname', 'namespace']
-#       group_wait: 30s  # wait 30s before sending first alert in a group
-#       group_interval: 5m # wait 5m before sedning new alerts for same froup
-#       repeat_interval: 12h  # resend alert if still firing after 12h
-#       receiver: slack-notifications
+    route:
+      group_by: ['alertname', 'namespace']
+      group_wait: 30s  # wait 30s before sending first alert in a group
+      group_interval: 5m # wait 5m before sedning new alerts for same froup
+      repeat_interval: 12h  # resend alert if still firing after 12h
+      receiver: slack-notifications
 
-#       routes: 
-#         - matchers:
-#             - severity="critical"
-#           receiver: slack-notifications
-#           repeat_interval: 1h
+      routes: 
+        - matchers:
+            - severity="critical"
+          receiver: slack-notifications
+          repeat_interval: 1h
 
-#         - matchers:
-#             - severity="warning"
-#           receiver: slack-notifications
-#           repeat_interval: 6h
+        - matchers:
+            - severity="warning"
+          receiver: slack-notifications
+          repeat_interval: 6h
 
-#     receivers:
-#       - name: slack-notifications
-#         slack_configs:
-#           - channel: '#devops-alerts'
-#             send_resolved: true  # notify when alert resolved too
-#             title: '{{ if eq .Status "firing" }} FIRING{{ else }} RESOLVED{{ end }} - {{ .CommonLabels.alertname }}'
-#             text: |
-#               {{ range .Alerts }}
-#               *Severity:* {{ .Labels.severity }}
-#               *Namespace:* {{ .Labels.namespace }}
-#               *Description:* {{ .Annotations.description }}
-#               *Started:* {{ .StartsAt | since }}
-#               {{ end }}
+    receivers:
+      - name: slack-notifications
+        slack_configs:
+          - channel: '#devops-alerts'
+            send_resolved: true  # notify when alert resolved too
+            title: '{{ if eq .Status "firing" }} FIRING{{ else }} RESOLVED{{ end }} - {{ .CommonLabels.alertname }}'
+            text: |
+              {{ range .Alerts }}
+              *Severity:* {{ .Labels.severity }}
+              *Namespace:* {{ .Labels.namespace }}
+              *Description:* {{ .Annotations.description }}
+              *Started:* {{ .StartsAt | since }}
+              {{ end }}
 
-#     inhibit_rules:
-#       # If critical alert is firing, suppress warning for same issue
-#       - source_matchers:
-#           - severity="critical"
-#         target_matchers:
-#           - severity="warning"
-#         equal: ['alertname', 'namespace']
+    inhibit_rules:
+      # If critical alert is firing, suppress warning for same issue
+      - source_matchers:
+          - severity="critical"
+        target_matchers:
+          - severity="warning"
+        equal: ['alertname', 'namespace']
 
-#   # Mount the k8s secret containing webhook URL
-#   # this keeps the url of Git completely 
-# alertmanagerSpec:
-#   secrets:
-#     - alertmanager-slack-webhook           
+  # Mount the k8s secret containing webhook URL
+  # this keeps the url of Git completely 
+alertmanagerSpec:
+  secrets:
+    - alertmanager-slack-webhook           
 
 #----------------------------NODE EXPORTER----------------------------------------------------
 

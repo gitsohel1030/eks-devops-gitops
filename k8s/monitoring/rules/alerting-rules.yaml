@@ -1,139 +1,139 @@
-# apiVersion: monitoring.coreos.com/v1
-# kind: PrometheusRule
-# metadata:
-#   labels:
-#     # these labels are required for prometheus operator 
-#     # to discover and load this rule
-#     app: kube-prometheus-stack
-#     release: prometheus-stack
-# spec:
-#   groups:
-#     - name: infrastrucure
-#       interval: 30s
-#       rules:
-#         # Node memory above 85%
-#         - alert: NodeMemoryHigh
-#           expr: |
-#             (
-#               node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes
-#             ) / node_memory_MemTotal_bytes * 100 > 85
-#           for: 5m # must be true for 5 minutes before firing
-#           labels:
-#             severity: warning
-#           annotations:
-#             summary: "High memory usage on {{ $labels.instance }}"
-#             description: "Node {{ $labels.instance }} memory usage is {{ $value | printf \"%.1f\" }}%. Threshold is 85%"
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    # these labels are required for prometheus operator 
+    # to discover and load this rule
+    app: kube-prometheus-stack
+    release: prometheus-stack
+spec:
+  groups:
+    - name: infrastrucure
+      interval: 30s
+      rules:
+        # Node memory above 85%
+        - alert: NodeMemoryHigh
+          expr: |
+            (
+              node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes
+            ) / node_memory_MemTotal_bytes * 100 > 85
+          for: 5m # must be true for 5 minutes before firing
+          labels:
+            severity: warning
+          annotations:
+            summary: "High memory usage on {{ $labels.instance }}"
+            description: "Node {{ $labels.instance }} memory usage is {{ $value | printf \"%.1f\" }}%. Threshold is 85%"
 
-#         # Node CPU above 85%
-#         - alert: NodeCPUHigh
-#           expr: |
-#             100 - (
-#               avg by(instance) (rate(node_cpu_seconds_total{mode="idle"} [5m])) * 100
-#               ) > 80
-#           for: 5m
-#           labels: 
-#             severity: warning
-#           annotations:
-#             summary: "High CPU usage on {{ $labels.instance }}"
-#             description: "Node {{ $labels.instance }} CPU usage is {{ $value | printf \"%.1f\" }}%. Threshold is 80%."
+        # Node CPU above 85%
+        - alert: NodeCPUHigh
+          expr: |
+            100 - (
+              avg by(instance) (rate(node_cpu_seconds_total{mode="idle"} [5m])) * 100
+              ) > 80
+          for: 5m
+          labels: 
+            severity: warning
+          annotations:
+            summary: "High CPU usage on {{ $labels.instance }}"
+            description: "Node {{ $labels.instance }} CPU usage is {{ $value | printf \"%.1f\" }}%. Threshold is 80%."
 
-#         # Pod crash looping
-#         - alert: PodCrashLooping
-#           expr: |
-#             rate(kube_pod_container_status_restarts_total[15m]) * 60 * 15 > 3
-#           for: 5m
-#           labels:
-#             severity: critical
-#           annotations:
-#             summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping"
-#             description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted more than 3 times in 15 minutes."
+        # Pod crash looping
+        - alert: PodCrashLooping
+          expr: |
+            rate(kube_pod_container_status_restarts_total[15m]) * 60 * 15 > 3
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping"
+            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted more than 3 times in 15 minutes."
 
-#         # Pod not ready
-#         - alert: PodNotReady
-#           expr: |
-#             kube_pod_status_ready{condition="true"} == 0
-#           for: 5m
-#           labels:
-#             severity: warning
-#           annotations: 
-#             summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} not ready"
-#             description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been not ready for more than 5 minutes."
+        # Pod not ready
+        - alert: PodNotReady
+          expr: |
+            kube_pod_status_ready{condition="true"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations: 
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} not ready"
+            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been not ready for more than 5 minutes."
 
-#     # --------------Deployment Alerts----------------
-#     - name: deployment
-#       interval: 30s
-#       rules:
+    # --------------Deployment Alerts----------------
+    - name: deployment
+      interval: 30s
+      rules:
 
-#         #HPA at maximum replicas
-#         - alert: HPAAtMaxReplicas
-#           expr: |
-#             kube_horizontalpodautoscaler_status_current_replicas == kube_horizontalpodautoscaler_spec_max_replicas
-#           for: 10m  # HPA at max for 10 minutes - might need more capacity
-#           labels:
-#             severity: warning
-#           annotations:
-#             summary: "HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler }} at max replicas"
-#             description: "HPA {{ $labels.horizontalpodautoscaler }} in namespace {{ $labels.namespace }} has been at maximum replicas ({{ $value }}) for 10 minutes. Consider increasing maxReplicas or node capacity."
+        #HPA at maximum replicas
+        - alert: HPAAtMaxReplicas
+          expr: |
+            kube_horizontalpodautoscaler_status_current_replicas == kube_horizontalpodautoscaler_spec_max_replicas
+          for: 10m  # HPA at max for 10 minutes - might need more capacity
+          labels:
+            severity: warning
+          annotations:
+            summary: "HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler }} at max replicas"
+            description: "HPA {{ $labels.horizontalpodautoscaler }} in namespace {{ $labels.namespace }} has been at maximum replicas ({{ $value }}) for 10 minutes. Consider increasing maxReplicas or node capacity."
 
-#     #------Application Alerts------------------
-#     - name: application
-#       interval: 30s
-#       rules:
+    #------Application Alerts------------------
+    - name: application
+      interval: 30s
+      rules:
 
-#         # High HTTP error rate
-#         - alert: HighHTTPErrorRate
-#           expr: |
-#             sum(rate(nginx_ingress_controller_requests{status=~"5.."}[5m]))
-#             /
-#             sum(rate(nginx_ingress_controller_requests[5m])) * 100 > 5
-#           for: 5m
-#           labels:
-#             severity: critical
-#           annotations:
-#             summary: "High HTTP error rate detected"
-#             descriptions: "HTTP 5xx error rate is {{ $value | printf \"%.1f\" }}%. Threshold is 5%."
+        # High HTTP error rate
+        - alert: HighHTTPErrorRate
+          expr: |
+            sum(rate(nginx_ingress_controller_requests{status=~"5.."}[5m]))
+            /
+            sum(rate(nginx_ingress_controller_requests[5m])) * 100 > 5
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "High HTTP error rate detected"
+            descriptions: "HTTP 5xx error rate is {{ $value | printf \"%.1f\" }}%. Threshold is 5%."
 
-#         - alert: HighResponseLatency
-#           expr: |
-#             histogram_quantile(0.99,
-#               sum(rate(nginx_ingress_controller_request_duration_seconds_bucket[5m]))
-#               by (le, ingress, namespace)
-#             ) > 2
-#           for: 5m
-#           labels: 
-#             severity: warning
-#           annotations:
-#             summary: "High p99 latency on {{ $labels.ingress }}"
-#             description: "99th percentile response latency for {{ $labels.ingress }} in {{ $labels.namespace }} is {{ $value | printf \"%.2f\" }}s. Threshold is 2s"
+        - alert: HighResponseLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(nginx_ingress_controller_request_duration_seconds_bucket[5m]))
+              by (le, ingress, namespace)
+            ) > 2
+          for: 5m
+          labels: 
+            severity: warning
+          annotations:
+            summary: "High p99 latency on {{ $labels.ingress }}"
+            description: "99th percentile response latency for {{ $labels.ingress }} in {{ $labels.namespace }} is {{ $value | printf \"%.2f\" }}s. Threshold is 2s"
             
-#     # -------------Kuberenetes Alerts-----------------
-#     - name: kubernetes
-#       interval: 30s
-#       rules:
+    # -------------Kuberenetes Alerts-----------------
+    - name: kubernetes
+      interval: 30s
+      rules:
 
-#         # PVC almost full
-#         - alert: PVCAlmostFull
-#           expr: |
-#             (
-#               kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes
-#             ) * 100 > 85
-#           for: 5m
-#           labels: 
-#             severity: warning
-#           annotations:
-#             summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} almost full"
-#             description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is {{ $value | printf \"%.1f\" }}% full. Threshold is 85%"
+        # PVC almost full
+        - alert: PVCAlmostFull
+          expr: |
+            (
+              kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes
+            ) * 100 > 85
+          for: 5m
+          labels: 
+            severity: warning
+          annotations:
+            summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} almost full"
+            description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is {{ $value | printf \"%.1f\" }}% full. Threshold is 85%"
 
-#         - alert: NodeDiskPressure
-#           expr: |
-#             (
-#               node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"}
-#             ) 
-#             /
-#             node_filesystem_size_bytes{mountpoint="/"} * 100 > 85
-#           for: 5m
-#           labels: 
-#             severity: critical
-#           annotations:
-#             summary: "High disk usage on {{ $labels.instance }}"
-#             description: "Node {{ $labels.instance }} root filesystem usage is {{ $value | printf \"%.1f\" }}%. Threshold is 85%."
+        - alert: NodeDiskPressure
+          expr: |
+            (
+              node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"}
+            ) 
+            /
+            node_filesystem_size_bytes{mountpoint="/"} * 100 > 85
+          for: 5m
+          labels: 
+            severity: critical
+          annotations:
+            summary: "High disk usage on {{ $labels.instance }}"
+            description: "Node {{ $labels.instance }} root filesystem usage is {{ $value | printf \"%.1f\" }}%. Threshold is 85%."
