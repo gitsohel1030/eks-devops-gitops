@@ -5,7 +5,7 @@ metadata:
     # these labels are required for prometheus operator 
     # to discover and load this rule
     app: kube-prometheus-stack
-    release: prometheus-stack
+    release: kube-prometheus-stack
 spec:
   groups:
     - name: infrastrucure
