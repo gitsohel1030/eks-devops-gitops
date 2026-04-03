@@ -119,7 +119,6 @@ alertmanager:
 
   # Mount the k8s secret containing webhook URL
   # this keeps the url of Git completely 
-alertmanagerSpec:
   secrets:
     - alertmanager-slack-webhook           
 
