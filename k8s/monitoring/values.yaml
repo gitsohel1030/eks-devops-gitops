@@ -111,7 +111,7 @@ alertmanager:
               *Severity:* {{ .Labels.severity }}
               *Namespace:* {{ .Labels.namespace }}
               *Description:* {{ .Annotations.description }}
-              *Started:* {{ .StartsAt | since }}
+              *Started:* {{ .StartsAt.Format | "2016-01-01 15:04:05" }}
               {{ end }}
 
     inhibit_rules:
