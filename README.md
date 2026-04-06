@@ -534,5 +534,5 @@ ArgoCD syncs cluster
 
 | Repository | Purpose |
 |---|---|
-| [aws-eks-devops-platform](https://github.com/YOUR_USERNAME/aws-eks-devops-platform) | Terraform infrastructure — EKS, VPC, IAM, ArgoCD install |
-| [eks-devops-app](https://github.com/YOUR_USERNAME/eks-devops-app) | Application source — Dockerfile, Jenkinsfile, app code |
+| [aws-eks-devops-platform](https://github.com/gitsohel1030/aws-eks-devops-platform) | Terraform infrastructure — EKS, VPC, IAM, ArgoCD install |
+| [eks-devops-app](https://github.com/gitsohel1030/eks-devops-app) | Application source — Dockerfile, Jenkinsfile, app code |
