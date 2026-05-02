@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-credentials
+  namespace: foodrush
+type: Opaque
+stringData:
+  POSTGRES_USER: foodrush
+  POSTGRES_PASSWORD: foodrush123
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-urls
+  namespace: foodrush
+data:
+  USER_SERVICE_URL: "http://user-service:8001"
+  RESTAURANT_SERVICE_URL: "http://restaurant-service:8002"
+  ORDER_SERVICE_URL: "http://order-service:8003"
