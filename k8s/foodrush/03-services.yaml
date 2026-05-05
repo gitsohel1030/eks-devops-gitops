@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: 608827180555.dkr.ecr.ap-south-1.amazonaws.com/foodrush-user-service:latest
+          image: 608827180555.dkr.ecr.ap-south-1.amazonaws.com/foodrush-user-service:c5cc5d6b3fecae0ba022e5842c1be8e3103e99e1
           ports:
             - containerPort: 8001
           env:
@@ -108,7 +108,7 @@ spec:
     spec:
       containers:
         - name: restaurant-service
-          image: 608827180555.dkr.ecr.ap-south-1.amazonaws.com/foodrush-restaurant-service:latest
+          image: 608827180555.dkr.ecr.ap-south-1.amazonaws.com/foodrush-restaurant-service:c5cc5d6b3fecae0ba022e5842c1be8e3103e99e1
           ports:
             - containerPort: 8002
           env:
@@ -191,7 +191,7 @@ spec:
     spec:
       containers:
         - name: order-service
-          image: 608827180555.dkr.ecr.ap-south-1.amazonaws.com/foodrush-order-service:latest
+          image: 608827180555.dkr.ecr.ap-south-1.amazonaws.com/foodrush-order-service:c5cc5d6b3fecae0ba022e5842c1be8e3103e99e1
           ports:
             - containerPort: 8003
           env:
