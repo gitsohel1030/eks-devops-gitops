@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: 608827180555.dkr.ecr.ap-south-1.amazonaws.com/foodrush-frontend:latest
+          image: 608827180555.dkr.ecr.ap-south-1.amazonaws.com/foodrush-frontend:742f39d85fe43d9608e336481880d4fa00680ea6
           ports:
             - containerPort: 3000
           envFrom:
