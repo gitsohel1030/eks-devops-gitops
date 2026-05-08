@@ -140,3 +140,152 @@ kubeControllerManager:
   eabled: false
 kubeScheduler:
   enabled: false
+
+#--------------------------- FOODRUSH ALERTING RULES ---------------------------------
+ 
+additionalPrometheusRulesMap:
+  foodrush-alerts:
+    groups:
+ 
+    #----------------------------------------------------------------
+    # Pod Health — catches ImagePullBackOff, CrashLoop, OOMKilled
+    #----------------------------------------------------------------
+    - name: foodrush.pod.health
+      rules:
+ 
+      - alert: FoodRushPodNotReady
+        expr: |
+          kube_pod_status_ready{namespace="foodrush", condition="false"} == 1
+        for: 2m
+        labels:
+          severity: warning
+          namespace: foodrush
+        annotations:
+          description: "Pod {{ $labels.pod }} in foodrush namespace is not ready for 2+ minutes."
+ 
+      - alert: FoodRushPodCrashLooping
+        expr: |
+          rate(kube_pod_container_status_restarts_total{namespace="foodrush"}[5m]) * 300 > 3
+        for: 5m
+        labels:
+          severity: critical
+          namespace: foodrush
+        annotations:
+          description: "Pod {{ $labels.pod }} ({{ $labels.container }}) is crash looping."
+ 
+      - alert: FoodRushImagePullFailed
+        expr: |
+          kube_pod_container_status_waiting_reason{namespace="foodrush", reason="ImagePullBackOff"} == 1
+        for: 2m
+        labels:
+          severity: critical
+          namespace: foodrush
+        annotations:
+          description: "Pod {{ $labels.pod }} cannot pull image — check ECR permissions or image tag."
+ 
+      - alert: FoodRushOOMKilled
+        expr: |
+          kube_pod_container_status_last_terminated_reason{namespace="foodrush", reason="OOMKilled"} == 1
+        for: 0m
+        labels:
+          severity: warning
+          namespace: foodrush
+        annotations:
+          description: "Pod {{ $labels.pod }} ({{ $labels.container }}) was OOMKilled — consider increasing memory limits."
+ 
+    #----------------------------------------------------------------
+    # Deployment Health — replica count dropped
+    #----------------------------------------------------------------
+    - name: foodrush.deployment.health
+      rules:
+ 
+      - alert: FoodRushDeploymentReplicasMismatch
+        expr: |
+          kube_deployment_spec_replicas{namespace="foodrush"}
+          !=
+          kube_deployment_status_replicas_available{namespace="foodrush"}
+        for: 5m
+        labels:
+          severity: warning
+          namespace: foodrush
+        annotations:
+          description: "Deployment {{ $labels.deployment }} has fewer available replicas than desired for 5+ minutes."
+ 
+      - alert: FoodRushDeploymentUnavailable
+        expr: |
+          kube_deployment_status_replicas_available{namespace="foodrush"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          namespace: foodrush
+        annotations:
+          description: "Deployment {{ $labels.deployment }} has ZERO available replicas — service is down."
+ 
+    #----------------------------------------------------------------
+    # Database Health — Postgres pods
+    #----------------------------------------------------------------
+    - name: foodrush.database.health
+      rules:
+ 
+      - alert: FoodRushDatabaseDown
+        expr: |
+          kube_pod_status_ready{
+            namespace="foodrush",
+            condition="false"
+          } == 1
+          and on(pod) kube_pod_labels{
+            namespace="foodrush",
+            label_app=~"user-db|restaurant-db|order-db"
+          }
+        for: 1m
+        labels:
+          severity: critical
+          namespace: foodrush
+        annotations:
+          description: "FoodRush database pod {{ $labels.pod }} is down — services will fail."
+ 
+      - alert: FoodRushDatabaseRestarted
+        expr: |
+          increase(kube_pod_container_status_restarts_total{
+            namespace="foodrush",
+            pod=~"user-db.*|restaurant-db.*|order-db.*"
+          }[10m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          namespace: foodrush
+        annotations:
+          description: "Database pod {{ $labels.pod }} restarted — data may have been lost (emptyDir storage)."
+ 
+    #----------------------------------------------------------------
+    # Resource Usage — CPU and Memory pressure
+    #----------------------------------------------------------------
+    - name: foodrush.resources
+      rules:
+ 
+      - alert: FoodRushHighCPU
+        expr: |
+          rate(container_cpu_usage_seconds_total{
+            namespace="foodrush",
+            container!=""
+          }[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          namespace: foodrush
+        annotations:
+          description: "Container {{ $labels.container }} in pod {{ $labels.pod }} CPU usage above 80% for 5 minutes."
+ 
+      - alert: FoodRushHighMemory
+        expr: |
+          container_memory_working_set_bytes{namespace="foodrush", container!=""}
+          /
+          kube_pod_container_resource_limits{namespace="foodrush", resource="memory", container!=""}
+          > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          namespace: foodrush
+        annotations:
+          description: "Container {{ $labels.container }} memory usage above 85% of limit."
+ 
