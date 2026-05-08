@@ -139,3 +139,104 @@ spec:
           annotations:
             summary: "High disk usage on {{ $labels.instance }}"
             description: "Node {{ $labels.instance }} root filesystem usage is {{ $value | printf \"%.1f\" }}%. Threshold is 85%."
+
+# -------------- FoodRush Alerts ----------------
+    - name: foodrush.pods
+      interval: 30s
+      rules:
+ 
+      - alert: FoodRushPodNotReady
+        expr: |
+          kube_pod_status_ready{namespace="foodrush", condition="true"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "FoodRush pod {{ $labels.pod }} not ready"
+          description: "Pod {{ $labels.pod }} in foodrush namespace has been not ready for 5+ minutes."
+ 
+      - alert: FoodRushImagePullFailed
+        expr: |
+          kube_pod_container_status_waiting_reason{namespace="foodrush", reason="ImagePullBackOff"} == 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "FoodRush pod {{ $labels.pod }} cannot pull image"
+          description: "Pod {{ $labels.pod }} is in ImagePullBackOff — check ECR permissions or image tag in gitops manifests."
+ 
+      - alert: FoodRushCrashLooping
+        expr: |
+          rate(kube_pod_container_status_restarts_total{namespace="foodrush"}[15m]) * 60 * 15 > 3
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "FoodRush pod {{ $labels.pod }} is crash looping"
+          description: "Pod {{ $labels.pod }} ({{ $labels.container }}) has restarted 3+ times in 15 minutes."
+ 
+      - alert: FoodRushOOMKilled
+        expr: |
+          kube_pod_container_status_last_terminated_reason{namespace="foodrush", reason="OOMKilled"} == 1
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "FoodRush container {{ $labels.container }} OOMKilled"
+          description: "Pod {{ $labels.pod }} was killed due to memory limit — consider increasing limits in manifests."
+ 
+    - name: foodrush.deployments
+      interval: 30s
+      rules:
+ 
+      - alert: FoodRushDeploymentUnavailable
+        expr: |
+          kube_deployment_status_replicas_available{namespace="foodrush"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "FoodRush {{ $labels.deployment }} has zero replicas"
+          description: "Deployment {{ $labels.deployment }} is completely down — service unavailable."
+ 
+      - alert: FoodRushReplicasMismatch
+        expr: |
+          kube_deployment_spec_replicas{namespace="foodrush"}
+          !=
+          kube_deployment_status_replicas_available{namespace="foodrush"}
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "FoodRush {{ $labels.deployment }} replicas mismatch"
+          description: "Deployment {{ $labels.deployment }} wants {{ $value }} replicas but not all are available."
+ 
+    - name: foodrush.databases
+      interval: 30s
+      rules:
+ 
+      - alert: FoodRushDatabaseDown
+        expr: |
+          kube_pod_status_ready{namespace="foodrush", condition="true"} == 0
+          and on(pod)
+          kube_pod_labels{namespace="foodrush", label_app=~"user-db|restaurant-db|order-db"}
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "FoodRush database {{ $labels.pod }} is down"
+          description: "Database pod {{ $labels.pod }} is not ready — dependent services will start failing."
+ 
+      - alert: FoodRushDatabaseRestarted
+        expr: |
+          increase(kube_pod_container_status_restarts_total{
+            namespace="foodrush",
+            pod=~"user-db.*|restaurant-db.*|order-db.*"
+          }[10m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "FoodRush database {{ $labels.pod }} restarted"
+          description: "Database pod restarted — all data lost since emptyDir storage is used. Consider PVC for persistence."
+ 
